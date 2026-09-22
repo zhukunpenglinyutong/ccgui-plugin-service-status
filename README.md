@@ -1,11 +1,12 @@
-# 服务状态（CC GUI 插件）
+# 服务状态
 
-在 CC GUI 中心页签里聚合各 AI 提供商**官方状态页**的实时事故状态：Claude、
-OpenAI / Codex、Cursor、GitHub / Copilot、Gemini、Kimi / Moonshot、MiniMax、Zed。
-每分钟自动刷新，也可手动刷新。
+**引擎突然变慢 / 报错之前，先看一眼是不是厂商自己在出事故。**
 
-> 当你用的引擎突然「变慢 / 报错 / 数据变红」时，先看一眼这里——是厂商自己在出事故，
-> 还是本机的问题。
+在 CC GUI 中心页签里聚合 8 家 AI 提供商**官方状态页**的实时事故状态：
+Claude、OpenAI / Codex、Cursor、GitHub / Copilot、Gemini、Kimi / Moonshot、MiniMax、Zed。
+每分钟自动刷新，也可以手动刷新；点卡片用系统浏览器打开该家的官方状态页。
+
+![服务状态界面](docs/screenshot-1.png)
 
 ## 来源与许可（请先读这一段）
 
@@ -19,11 +20,10 @@ TokenTracker 作者无隶属关系。
   解析与严重度排序规则、8s 探针超时、60s 刷新间隔、状态文案。
 - 上游采用 **MIT 许可证**（Copyright © 2026 xiufengsun）。按 MIT 要求，上游版权声明
   与许可证全文已完整收录在 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)，
-  本仓库 `LICENSE` 中也指向该文件。
+  并逐条列出移植了哪些文件、哪些行为做了有意调整；本仓库 `LICENSE` 也指向该文件。
 - 本插件自身的许可同样是 MIT（Copyright © 2026 zhukunpenglinyutong）。
 - 与上游的**有意差异**只在传输层与展示层：网络请求改走宿主白名单代理
   `plugin_http_request`；卡片改为按钮 + 系统打开器；不复制厂商 logo（用首字母色块）。
-  逐条对照见 `THIRD_PARTY_NOTICES.md`。
 - 各厂商名称与商标（Claude、OpenAI、Cursor、GitHub、Gemini、Kimi/Moonshot、
   MiniMax、Zed）归各自所有者，这里只用于标识被监测的服务。
 
@@ -38,6 +38,15 @@ TokenTracker 作者无隶属关系。
 - 探针失败（超时 / 网络不通 / 载荷异常）一律显示「无法访问」，不会冒充任何一种事故等级，
   也不会影响其它卡片。
 - 简体中文 / English 文案跟随宿主语言。
+
+## 界面
+
+![界面](docs/screenshot-1.png)
+
+- 右上角是「检查于 HH:MM:SS」与刷新按钮（转圈 → 对号，遵循应用内的反馈规范）。
+- 每张卡片：首字母色块 + 提供商名 + 状态点 + 状态文案 + 官方状态页域名。
+  出现事故时，卡片下方会多出一行事故描述（来自官方 feed 的原始文案）。
+- 卡片整块可点，点击即用系统打开器打开对应官方状态页。
 
 ## 权限与网络
 

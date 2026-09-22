@@ -6,3 +6,4 @@ node_modules/
 # 锚定根目录（前导 /）：src/ 下的同名源文件必须入库。
 /main.js
 /styles.css
+.omx/

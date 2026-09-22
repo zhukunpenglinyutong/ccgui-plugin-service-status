@@ -25,5 +25,7 @@
     "network:status.minimaxi.com",
     "network:status.zed.dev"
   ],
-  "keywords": ["status", "服务状态", "incident", "claude", "openai", "cursor"]
+  "keywords": ["status", "服务状态", "incident", "claude", "openai", "cursor"],
+  "icon": "docs/icon.png",
+  "screenshots": ["docs/screenshot-1.png"]
 }
