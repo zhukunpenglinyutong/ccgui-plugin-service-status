@@ -1,0 +1,58 @@
+# 发版流水线（Obsidian 同款约定：tag = manifest version）。
+# 推送 tag 触发：校验 manifest → 校验 tag 与版本一致 → 构建三件套 → 发 Release。
+# 触发同时接受 "1.2.0"（市场规范约定）与 "v1.2.0"（脚本会剥掉 v 前缀再比对）。
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "[0-9]*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate manifest
+        run: pnpm validate
+
+      - name: Check tag matches manifest version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION="$(node -p "require('./manifest.json').version")"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "tag v$TAG != manifest version $VERSION"
+            exit 1
+          fi
+
+      - run: pnpm build
+
+      - name: Generate checksums
+        run: |
+          FILES="main.js manifest.json"
+          [ -f styles.css ] && FILES="$FILES styles.css"
+          sha256sum $FILES > checksums.txt
+          cat checksums.txt
+
+      - name: Create GitHub Release with plugin artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            main.js
+            manifest.json
+            styles.css
+            checksums.txt

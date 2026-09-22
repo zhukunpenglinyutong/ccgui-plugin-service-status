@@ -1,0 +1,393 @@
+/**
+ * 服务状态插件样式。只消费宿主语义 token（带 light fallback，
+ * 参见 @ccgui/plugin-ui 的 PLUGIN_UI_TOKEN_CONTRACT），深色由 --color-* 自动翻转；
+ * 状态色（绿/黄/橙/红）不属于主题 token，这里按 light / .dark 各给一组。
+ */
+
+.ss-mount {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.ss-root {
+  --ss-ok-dot: #10b981;
+  --ss-ok-text: #047857;
+  --ss-minor-dot: #eab308;
+  --ss-minor-text: #a16207;
+  --ss-major-dot: #f97316;
+  --ss-major-text: #c2410c;
+  --ss-critical-dot: #ef4444;
+  --ss-critical-text: #b91c1c;
+  --ss-unknown-dot: #9ca3af;
+  --ss-unknown-text: var(--color-text-tertiary, #6b7280);
+
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  color: var(--color-text-primary, #111827);
+  background: var(--color-background-primary-default, #ffffff);
+  font-family: var(--font-sans);
+}
+
+.dark .ss-root {
+  --ss-ok-text: #34d399;
+  --ss-minor-text: #facc15;
+  --ss-major-text: #fb923c;
+  --ss-critical-text: #f87171;
+}
+
+.ss-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+}
+
+.ss-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ss-head-text {
+  min-width: 0;
+}
+
+.ss-title {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.ss-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary, #4b5563);
+}
+
+.ss-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ss-checked {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #9ca3af);
+  white-space: nowrap;
+}
+
+.ss-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--color-separator-border, #e5e7eb);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary, #4b5563);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.ss-refresh:hover:not(:disabled) {
+  background: var(--color-background-tertiary-hover, #f3f4f6);
+  color: var(--color-text-primary, #111827);
+}
+
+.ss-refresh:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ss-refresh:focus-visible,
+.ss-card-hit:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-border-focus-ring, #3b82f6);
+}
+
+/* 刷新反馈：0.6s/圈 linear infinite（docs/ui-ux-spec.zh-CN.md §4.1）。 */
+.ss-spin {
+  display: inline-flex;
+  animation: ss-spin 0.6s linear infinite;
+}
+
+@keyframes ss-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-spin {
+    animation: none;
+  }
+}
+
+.ss-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.ss-card {
+  min-width: 0;
+}
+
+.ss-card-hit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--color-separator-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--color-background-primary-default, #ffffff);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.ss-card-hit:hover {
+  border-color: var(--color-border-button-hover, #d1d5db);
+  background: var(--color-background-tertiary-hover, #f9fafb);
+}
+
+.ss-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ss-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--color-background-tertiary-default, #e5e7eb);
+  color: var(--color-text-secondary, #4b5563);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.ss-logo[data-provider="claude"] {
+  background: rgba(217, 119, 87, 0.16);
+  color: #c2683f;
+}
+
+.ss-logo[data-provider="openai"],
+.ss-logo[data-provider="zed"] {
+  background: rgba(16, 163, 127, 0.16);
+  color: #0e8a6c;
+}
+
+.ss-logo[data-provider="cursor"],
+.ss-logo[data-provider="github"] {
+  background: rgba(107, 114, 128, 0.18);
+  color: #4b5563;
+}
+
+.ss-logo[data-provider="gemini"] {
+  background: rgba(59, 130, 246, 0.16);
+  color: #1d4ed8;
+}
+
+.ss-logo[data-provider="kimi"] {
+  background: rgba(15, 23, 42, 0.12);
+  color: #1f2937;
+}
+
+.ss-logo[data-provider="minimax"] {
+  background: rgba(99, 102, 241, 0.16);
+  color: #4338ca;
+}
+
+.dark .ss-logo[data-provider="claude"] {
+  color: #e8a184;
+}
+
+.dark .ss-logo[data-provider="openai"],
+.dark .ss-logo[data-provider="zed"] {
+  color: #34d399;
+}
+
+.dark .ss-logo[data-provider="cursor"],
+.dark .ss-logo[data-provider="github"] {
+  color: #d1d5db;
+}
+
+.dark .ss-logo[data-provider="gemini"] {
+  color: #93c5fd;
+}
+
+.dark .ss-logo[data-provider="kimi"] {
+  background: rgba(226, 232, 240, 0.14);
+  color: #e5e7eb;
+}
+
+.dark .ss-logo[data-provider="minimax"] {
+  color: #a5b4fc;
+}
+
+.ss-name {
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ss-ext {
+  margin-left: auto;
+  color: var(--color-text-tertiary, #9ca3af);
+  flex-shrink: 0;
+}
+
+.ss-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ss-dot {
+  position: relative;
+  display: inline-flex;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.ss-dot-core {
+  position: relative;
+  display: inline-flex;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--ss-dot-color, var(--ss-unknown-dot));
+}
+
+.ss-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--ss-dot-color, var(--ss-unknown-dot));
+  opacity: 0.75;
+  animation: ss-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ss-ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-ping {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.ss-dot--none {
+  --ss-dot-color: var(--ss-ok-dot);
+}
+
+.ss-dot--minor {
+  --ss-dot-color: var(--ss-minor-dot);
+}
+
+.ss-dot--major {
+  --ss-dot-color: var(--ss-major-dot);
+}
+
+.ss-dot--critical {
+  --ss-dot-color: var(--ss-critical-dot);
+}
+
+.ss-dot--unknown,
+.ss-dot--pending {
+  --ss-dot-color: var(--ss-unknown-dot);
+}
+
+.ss-dot--pending {
+  animation: ss-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ss-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.ss-state-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ss-state-label--none {
+  color: var(--ss-ok-text);
+}
+
+.ss-state-label--minor {
+  color: var(--ss-minor-text);
+}
+
+.ss-state-label--major {
+  color: var(--ss-major-text);
+}
+
+.ss-state-label--critical {
+  color: var(--ss-critical-text);
+}
+
+.ss-state-label--unknown,
+.ss-state-label--pending {
+  color: var(--ss-unknown-text);
+}
+
+.ss-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-secondary, #4b5563);
+  word-break: break-word;
+}
+
+.ss-host {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #9ca3af);
+  font-variant-numeric: tabular-nums;
+}
+
+.ss-error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-error-primary, #dc2626);
+}
+
+.ss-note {
+  margin: 24px 0 0;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #9ca3af);
+}

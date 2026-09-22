@@ -1,0 +1,29 @@
+{
+  "id": "service-status",
+  "name": "服务状态",
+  "version": "1.0.0",
+  "sdkVersion": "^0.3",
+  "minAppVersion": "1.0.6",
+  "author": "zhukunpenglinyutong",
+  "repo": "zhukunpenglinyutong/ccgui-plugin-service-status",
+  "description": "在中心页签聚合 Claude / OpenAI / Cursor / GitHub / Gemini / Kimi / MiniMax / Zed 官方状态页的实时事故状态，每分钟自动刷新。",
+  "tier": "js",
+  "license": "MIT",
+  "permissions": [
+    "ui:center-tab",
+    "ui:sidebar-entry",
+    "ui:command",
+    "exec:open",
+    "exec:xdg-open",
+    "exec:cmd",
+    "network:status.claude.com",
+    "network:status.openai.com",
+    "network:status.cursor.com",
+    "network:www.githubstatus.com",
+    "network:www.google.com",
+    "network:status.moonshot.cn",
+    "network:status.minimaxi.com",
+    "network:status.zed.dev"
+  ],
+  "keywords": ["status", "服务状态", "incident", "claude", "openai", "cursor"]
+}

@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+
+# 构建产物（仅仓库根的 main.js / styles.css）不入库：release 附件由 CI 在 tag 上
+# 构建并上传（见 .github/workflows/release.yml）。本地调试先 pnpm build 再指向仓库根。
+# 锚定根目录（前导 /）：src/ 下的同名源文件必须入库。
+/main.js
+/styles.css
