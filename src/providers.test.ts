@@ -6,6 +6,7 @@ import type { PluginContext } from "./ccgui-plugin";
 import { openExternalUrl, setHostCtx } from "./host";
 import {
   STATUS_PROVIDERS,
+  describeFailure,
   parseGoogleIncidents,
   parseInstatusSummary,
   parseStatuspage,
@@ -104,16 +105,50 @@ describe("probeProvider", () => {
     });
   });
 
-  it("treats a non-200 response as unreachable", async () => {
+  it("treats a non-200 response as unreachable and keeps the reason", async () => {
     stubHost(() => json({ status: { indicator: "none" } }, 503));
     const claude = STATUS_PROVIDERS.find((p) => p.id === "claude")!;
-    await expect(probeProvider(claude)).resolves.toEqual({ indicator: "unknown", description: "", updatedAt: null });
+    await expect(probeProvider(claude)).resolves.toEqual({
+      indicator: "unknown",
+      description: "HTTP 503",
+      updatedAt: null,
+    });
   });
 
-  it("treats a bridge rejection as unreachable", async () => {
+  it("treats a bridge rejection as unreachable and keeps the reason", async () => {
     stubHost(() => Promise.reject(new Error("network down")) as never);
     const github = STATUS_PROVIDERS.find((p) => p.id === "github")!;
-    await expect(probeProvider(github)).resolves.toEqual({ indicator: "unknown", description: "", updatedAt: null });
+    await expect(probeProvider(github)).resolves.toEqual({
+      indicator: "unknown",
+      description: "network down",
+      updatedAt: null,
+    });
+  });
+
+  it("retries a transient failure once instead of reporting it", async () => {
+    let calls = 0;
+    stubHost(() => {
+      calls += 1;
+      if (calls === 1) throw new Error("network down");
+      return json({ page: { updated_at: null }, status: { indicator: "none", description: "All Systems Operational" } });
+    });
+    const claude = STATUS_PROVIDERS.find((p) => p.id === "claude")!;
+    await expect(probeProvider(claude)).resolves.toEqual({
+      indicator: "none",
+      description: "All Systems Operational",
+      updatedAt: null,
+    });
+    expect(calls).toBe(2);
+  });
+
+  it("strips the internal label from a redirect-grant failure", () => {
+    expect(
+      describeFailure(
+        new Error("service-status: redirect to status.x.ai:443 is not covered by a network grant"),
+      ),
+    ).toBe("redirect to status.x.ai:443 is not covered by a network grant");
+    expect(describeFailure(new Error("status probe cursor: timeout after 14000ms"))).toBe("timeout after 14000ms");
+    expect(describeFailure(new Error("x".repeat(400)))).toHaveLength(160);
   });
 
   it("keeps other providers working when one probe fails", async () => {
@@ -157,7 +192,63 @@ describe("probeProvider http kind", () => {
 
   it("treats a bridge rejection as unreachable", async () => {
     stubHost(() => Promise.reject(new Error("network down")) as never);
-    await expect(probeProvider(minimax())).resolves.toEqual({ indicator: "unknown", description: "", updatedAt: null });
+    await expect(probeProvider(minimax())).resolves.toEqual({
+      indicator: "unknown",
+      description: "network down",
+      updatedAt: null,
+    });
+  });
+});
+
+describe("indicator cross-check", () => {
+  const kimi = () => STATUS_PROVIDERS.find((p) => p.id === "kimi")!;
+  const isIncidents = (url: string) => url.endsWith("/api/v2/incidents/unresolved.json");
+
+  it("downgrades a stale indicator when nothing is unresolved", async () => {
+    stubHost((url) =>
+      isIncidents(url)
+        ? json({ incidents: [] })
+        : json({
+            page: { updated_at: "2026-11-01T21:33:03+08:00" },
+            status: { indicator: "minor", description: "Minor Service Outage" },
+          }),
+    );
+
+    await expect(probeProvider(kimi())).resolves.toEqual({
+      indicator: "none",
+      description: "",
+      updatedAt: "2026-11-01T21:33:03+08:00",
+    });
+  });
+
+  it("keeps the upstream indicator while an incident is still open", async () => {
+    stubHost((url) =>
+      isIncidents(url)
+        ? json({ incidents: [{ name: "Kimi Code K3 TTFT 响应延迟升高", status: "investigating" }] })
+        : json({
+            page: { updated_at: "2026-11-01T22:15:41+08:00" },
+            status: { indicator: "major", description: "Partial System Outage" },
+          }),
+    );
+
+    await expect(probeProvider(kimi())).resolves.toEqual({
+      indicator: "major",
+      description: "Partial System Outage",
+      updatedAt: "2026-11-01T22:15:41+08:00",
+    });
+  });
+
+  it("never downgrades when the cross-check itself fails", async () => {
+    stubHost((url) => {
+      if (isIncidents(url)) throw new Error("network down");
+      return json({ status: { indicator: "major", description: "Partial System Outage" } });
+    });
+
+    await expect(probeProvider(kimi())).resolves.toEqual({
+      indicator: "major",
+      description: "Partial System Outage",
+      updatedAt: null,
+    });
   });
 });
 
@@ -170,6 +261,11 @@ describe("manifest ↔ code contract", () => {
     );
     for (const provider of STATUS_PROVIDERS) {
       expect(granted.has(new URL(provider.apiUrl).host)).toBe(true);
+      // 复核请求与 status.json 同域，但换了路径；显式断言，避免将来挪到别的域时漏授权。
+      if (provider.verifyUnresolved) {
+        const incidents = new URL("/api/v2/incidents/unresolved.json", provider.apiUrl);
+        expect(granted.has(incidents.host)).toBe(true);
+      }
     }
   });
 });

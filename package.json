@@ -1,6 +1,6 @@
 {
   "name": "ccgui-plugin-service-status",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "CC GUI 插件：聚合各 AI 提供商官方状态页的实时事故状态",
   "type": "module",

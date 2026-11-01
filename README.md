@@ -4,7 +4,7 @@
 
 在 CC GUI 中心页签里聚合 8 家 AI 提供商**官方状态页**的实时事故状态：
 Claude、OpenAI / Codex、Cursor、GitHub / Copilot、Gemini、Kimi / Moonshot、MiniMax、Zed。
-（MiniMax 无公开状态页，退化为对其官方平台域名 platform.minimaxi.com 的连通性探测。）
+（Cursor 状态页已并入 status.x.ai；MiniMax 无公开状态页，退化为对其官方平台域名 platform.minimax.cn 的连通性探测。）
 每分钟自动刷新，也可以手动刷新；点卡片用系统浏览器打开该家的官方状态页。
 
 ![服务状态界面](docs/screenshot-1.png)
@@ -19,6 +19,7 @@ TokenTracker 作者无隶属关系。
   的 `dashboard/src/pages/ServiceStatusPage.jsx` 与 `src/lib/provider-status.js`：
   提供商清单、三种探针（Statuspage.io / Instatus / Google incidents feed）、
   解析与严重度排序规则、8s 探针超时、60s 刷新间隔、状态文案。
+  （本插件把超时放宽到 12s 并加了单次重试，原因见下文「探测失败」一节。）
 - 上游采用 **MIT 许可证**（Copyright © 2026 xiufengsun）。按 MIT 要求，上游版权声明
   与许可证全文已完整收录在 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)，
   并逐条列出移植了哪些文件、哪些行为做了有意调整；本仓库 `LICENSE` 也指向该文件。
@@ -37,7 +38,12 @@ TokenTracker 作者无隶属关系。
 - 点击卡片用系统默认浏览器打开该家的官方状态页。
 - 每分钟自动刷新；页头「刷新」按钮可立即重探（转圈 → 对号反馈），并显示上次检查时间。
 - 探针失败（超时 / 网络不通 / 载荷异常）一律显示「无法访问」，不会冒充任何一种事故等级，
-  也不会影响其它卡片。
+  也不会影响其它卡片；失败原因（如 `redirect to status.x.ai:443 is not covered by a network grant`、
+  `timeout after 14000ms`）写在卡片副标题上，省得排查时只能看到「无法访问」四个字。
+- 一次刷新内瞬时失败会重试一次（间隔 350ms），抖动不再直接变成「无法访问」。
+- Kimi 指示器非 `none` 时，再用 `/api/v2/incidents/unresolved.json` 复核：一条未关闭事故都没有
+  就按「运行正常」显示。上游偶尔把事故全 resolved 却忘了把 `indicator` 复位，此时状态页是骗人的；
+  复核请求失败则按上游原值兜底，不掩盖真实故障。
 - 简体中文 / English 文案跟随宿主语言。
 
 ## 界面
@@ -59,7 +65,7 @@ TokenTracker 作者无隶属关系。
 | `ui:sidebar-entry` | 首页侧栏入口 |
 | `ui:command` | 命令面板「打开服务状态」 |
 | `exec:open` / `exec:xdg-open` / `exec:cmd` | 点击卡片时调用系统打开器（macOS / Linux / Windows） |
-| `network:status.claude.com`、`network:status.openai.com`、`network:status.cursor.com`、`network:www.githubstatus.com`、`network:www.google.com`、`network:status.moonshot.cn`、`network:platform.minimaxi.com`、`network:status.zed.dev` | 只读拉取各厂商公开状态页 JSON；MiniMax 无状态页，仅探测官方平台连通性 |
+| `network:status.claude.com`、`network:status.openai.com`、`network:status.cursor.com`、`network:status.x.ai`、`network:www.githubstatus.com`、`network:www.google.com`、`network:status.moonshot.cn`、`network:platform.minimaxi.com`、`network:platform.minimax.cn`、`network:status.zed.dev` | 只读拉取各厂商公开状态页 JSON；MiniMax 无状态页，仅探测官方平台连通性 |
 
 关于 `exec:` 的三条授权：插件拿不到宿主的「打开外链」能力，只能用系统打开器
 （`open` / `xdg-open` / `cmd /c start`）。代码里 URL 只来自 `src/providers.ts` 的常量表

@@ -1,12 +1,12 @@
 {
   "id": "service-status",
   "name": "服务状态",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "sdkVersion": "^0.3",
   "minAppVersion": "1.0.6",
   "author": "zhukunpenglinyutong",
   "repo": "zhukunpenglinyutong/ccgui-plugin-service-status",
-  "description": "在中心页签聚合 Claude / OpenAI / Cursor / GitHub / Gemini / Kimi / MiniMax / Zed 的实时可用性状态（MiniMax 无公开状态页，改为官方平台连通性探测），每分钟自动刷新。",
+  "description": "在中心页签聚合 Claude / OpenAI / Cursor / GitHub / Gemini / Kimi / MiniMax / Zed 的实时可用性状态（Cursor 状态页已并入 status.x.ai；MiniMax 无公开状态页，探测官方平台域名；Kimi 指示器非正常时用未关闭事故复核；探测失败显示失败原因），每分钟自动刷新。",
   "tier": "js",
   "license": "MIT",
   "permissions": [
@@ -19,10 +19,12 @@
     "network:status.claude.com",
     "network:status.openai.com",
     "network:status.cursor.com",
+    "network:status.x.ai",
     "network:www.githubstatus.com",
     "network:www.google.com",
     "network:status.moonshot.cn",
     "network:platform.minimaxi.com",
+    "network:platform.minimax.cn",
     "network:status.zed.dev"
   ],
   "keywords": ["status", "服务状态", "incident", "claude", "openai", "cursor"],
